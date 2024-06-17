@@ -6,7 +6,9 @@ import java.net.Socket;
 
 public class ClientHandler implements Runnable {
   private final Socket clientSocket;
-  private DataStorage dataStorage;
+  private final DataStorage dataStorage;
+
+  private static final String EMPTY_RESPONSE = "$-1\r";
 
   public ClientHandler(Socket socket, DataStorage dataStorage) {
     this.clientSocket = socket;
@@ -48,10 +50,29 @@ public class ClientHandler implements Runnable {
           switch (command) {
             case "PING" -> out.println(createStringResponse("PONG"));
             case "ECHO" -> out.println(createStringResponse(args[1]));
-            case "GET" -> out.println(createStringResponse(dataStorage.get(args[1])));
+            case "GET" -> {
+              String value = dataStorage.get(args[1]);
+              if (value == null) {
+                out.println(EMPTY_RESPONSE);
+              } else {
+                out.println("$" + value.length() + "\r\n" + value + "\r");
+              }
+            }
             case "SET" -> {
-              dataStorage.set(args[1], args[2]);
-              out.println(createStringResponse("OK"));
+              if (args.length == 3) {
+                dataStorage.set(args[1], args[2]);
+                out.println(createStringResponse("OK"));
+              } else if (args.length == 5 && args[3].equalsIgnoreCase("px")) {
+                try {
+                  long expiryMillis = Long.parseLong(args[4]);
+                  dataStorage.set(args[1], args[2], expiryMillis);
+                  out.println(createStringResponse("OK"));
+                } catch (NumberFormatException e) {
+                  out.println(createStringResponse("ERR value is not an integer or out of range"));
+                }
+              } else {
+                out.println(createStringResponse("ERR wrong number of arguments for 'SET' command"));
+              }
             }
           }
         }
