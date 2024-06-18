@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Map;
 
 public class ClientHandler implements Runnable {
   private final Socket clientSocket;
@@ -73,6 +74,14 @@ public class ClientHandler implements Runnable {
               } else {
                 out.println(createStringResponse("ERR wrong number of arguments for 'SET' command"));
               }
+            }
+            case "INFO" -> {
+              Map<String, String> serverInfo = dataStorage.getServerInfo();
+              StringBuilder info = new StringBuilder();
+              for (Map.Entry<String, String> entry : serverInfo.entrySet()) {
+                info.append(entry.getKey()).append(":").append(entry.getValue()).append("\r\n");
+              }
+              out.println(createStringResponse(info.toString()));
             }
           }
         }

@@ -23,6 +23,7 @@ public class Main {
     ServerSocket serverSocket = null;
     ExecutorService executor = Executors.newFixedThreadPool(10);
     DataStorage dataStorage = new DataStorage();
+    dataStorage.addServerInfo("role", "master");
     try {
       serverSocket = new ServerSocket(port);
       serverSocket.setReuseAddress(true);
