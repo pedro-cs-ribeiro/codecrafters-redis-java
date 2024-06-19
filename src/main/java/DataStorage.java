@@ -11,6 +11,8 @@ public class DataStorage {
 
   public DataStorage() {
     serverInfo.put("role", "master");
+    serverInfo.put("master_replid", RandomUtils.generateRandomId());
+    serverInfo.put("master_repl_offset", "0");
   }
 
   public String get(String key) {

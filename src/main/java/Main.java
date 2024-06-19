@@ -66,7 +66,6 @@ public class Main {
         if (serverSocket != null) {
           serverSocket.close();
         }
-
         executor.shutdown();
       } catch (IOException e) {
         System.err.println("IOException closing resources: " + e.getMessage());
