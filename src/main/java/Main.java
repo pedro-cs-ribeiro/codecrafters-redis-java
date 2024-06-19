@@ -5,7 +5,7 @@ import java.util.concurrent.*;
 public class Main {
 
   private static final DataStorage dataStorage = new DataStorage();
-
+  private static final ExecutorService executor = Executors.newFixedThreadPool(15);
 
   private static ServerConfig parseArguments(String[] args) {
     ServerConfig config = new ServerConfig();
@@ -18,16 +18,18 @@ public class Main {
         } catch (NumberFormatException e) {
           System.err.println("Invalid port number. Using default port 6379.");
         }
-      } else if (args[i].equals("--replicaof") && i < args.length - 1) {
+      } else if (args[i].equals("--replicaof")) {
+        System.out.println("Replication enabled.");
         String replicaOfArg = args[i + 1];
-        replicaOfArg = replicaOfArg.substring(1, replicaOfArg.length() - 1);
         String[] parts = replicaOfArg.split(" ");
+        System.out.println(parts.length);
         if (parts.length == 2) {
           config.setMasterHost(parts[0]);
           try {
             config.setMasterPort(Integer.parseInt(parts[1]));
             System.out.println("Replica of: " + config.getMasterHost() + ":" + config.getMasterPort());
             dataStorage.addServerInfo("role", "slave");
+            executor.submit(new ConnectionHandler(config.getMasterHost(), config.getMasterPort()));
           } catch (NumberFormatException e) {
             System.err.println("Invalid master port number.");
             return config;
@@ -49,7 +51,6 @@ public class Main {
     System.out.println("Server starting on port " + config.getPort() + "...");
 
     ServerSocket serverSocket = null;
-    ExecutorService executor = Executors.newFixedThreadPool(10);
     try {
       serverSocket = new ServerSocket(config.getPort());
       serverSocket.setReuseAddress(true);
