@@ -9,6 +9,10 @@ public class DataStorage {
   private final ScheduledExecutorService expiryScheduler = Executors.newSingleThreadScheduledExecutor();
   private final Long MAX_EXPIRY = Long.MAX_VALUE;
 
+  public DataStorage() {
+    serverInfo.put("role", "master");
+  }
+
   public String get(String key) {
     AbstractMap.SimpleEntry<String, Long> entry = data.get(key);
     if (entry == null || entry.getValue() < System.currentTimeMillis()) {
